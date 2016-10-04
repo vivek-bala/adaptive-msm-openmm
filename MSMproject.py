@@ -334,13 +334,17 @@ class MSMProject(object):
             if(i==MaxState and have_maxstate==0):
                 maxstatefn='maxstate_{0}.pdb'.format(i)
                 sys.stderr.write("writing out pdb of most populated state.\n")
-                args = ['gmx trjconv']
-                args += ["-f", trajname, "-s", self.tprfile,
+                args1 = 'gmx trjconv'
+                args2 = ["-f", trajname, "-s", self.tprfile,
                          "-o", maxstatefn, "-pbc", "mol", "-dump", "%d" % time]
-                if self.ndx is not None:
-                    args.extend( [ "-n", self.ndx ] )
 
-                os.system('export PATH=$PATH:/home/vivek/Research/modules/gromacs-5.1.3/build/bin | {0}'.format(args, self.grpname))
+                for item in args2:
+                    args1 = args1 + ' ' + item
+
+                if self.ndx is not None:
+                    args1 += "-n {0}".format(self.ndx)
+
+                os.system('echo {1} | {0}'.format(args1, self.grpname))
                 #proc = subprocess.Popen(args, stdin=subprocess.PIPE, stdout=sys.stdout, stderr=sys.stderr)
                 #[std, err] = proc.communicate(self.grpname)
 
@@ -365,15 +369,20 @@ class MSMProject(object):
             time        = frame_nr * trajdata.dt 
             #maxstatefn=os.path.join(self.inp.getOutputDir(), '.conf')
             outfn= 'new_run_%d.gro'%(j)
-            args = ['gmx trjconv']
-            args += ["-f", "%s"%trajname, "-s", self.tprfile, 
+            args1 = 'gmx trjconv'
+            args2 = ["-f", "%s"%trajname, "-s", self.tprfile, 
                      "-o", outfn, "-pbc", "mol", "-dump", "%d" % time]
+
+            for item in args2:
+                    args1 = args1 + ' ' + item
+
             sys.stderr.write("writing out new run %s .\n"%outfn)
             #proc = subprocess.Popen(args, stdin=subprocess.PIPE, stdout=sys.stdout, stderr=sys.stderr)
-            os.system('echo 0 | {0}'.format(args))
+            os.system('echo 0 | {0}'.format(args1))
             #proc.communicate('0')
             self.newRuns.append(outfn)
-        print 'done'
+
+        print 'done with micro-states'
 
 
 
@@ -415,14 +424,10 @@ class MSMProject(object):
         Assignments = Map[Assignments]
         NumStates = max(Assignments.flatten())+1
 
-        sys.stderr.write("Calculating macrostates with lag time %g.\n"%
-                         self.lag_time)
+        sys.stderr.write("Calculating macrostates with lag time %g.\n"%self.lag_time)
 
         # Now repeat any calculations with the new assignments
-        Counts = msmbuilder.MSMLib.GetCountMatrixFromAssignments(Assignments,
-                                                        self.num_macro,
-                                                        LagTime=self.lag_time,
-                                                        Slide=True)
+        Counts = msmbuilder.MSMLib.GetCountMatrixFromAssignments(Assignments, self.num_macro, LagTime=self.lag_time, Slide=True)
         
         #PK want reversible MLE estimator again here
         sys.stderr.write("Recalculating assignments & trimming again.\n")
@@ -440,22 +445,25 @@ class MSMProject(object):
         X0       = X0/sum(X0)
         MaxState = argmax(X0)
 
-        tcoutf=os.path.join(self.inp.getOutputDir(), "tc.dat")
+        tcoutf= "tc.dat"
         if scipy.sparse.issparse(TC):
             scipy.savetxt(tcoutf, TC.todense())
         else:
             numpy.savetxt(tcoutf, TC, fmt="%12.6g" )
-        self.out.setOut('macro_transition_counts', FileValue(tcoutf))
+        #self.out.setOut('macro_transition_counts', FileValue(tcoutf))
 
-        woutf=os.path.join(self.inp.getOutputDir(), "weights.dat")
+        woutf= "weights.dat"
         numpy.savetxt(woutf, X0, fmt="%12.6g" )
-        self.out.setOut('macro_weights', FileValue(woutf))
+        #self.out.setOut('macro_weights', FileValue(woutf))
+
+        with open('sim_details.txt','w') as f:
+            f.write("macro_transition_counts = {0}".format(tcoutf))
+            f.write("macro_weights = {0}".format(woutf))
 
        
         # Do adaptive sampling on the macrostates
         nstates=int(self.num_macro*self.num_to_start)
-        sys.stderr.write("Adaptive sampling to %d=%d*%d states.\n"%
-                         (nstates, self.num_macro, self.num_to_start))
+        sys.stderr.write("Adaptive sampling to %d=%d*%d states.\n"%(nstates, self.num_macro, self.num_to_start))
         Proj = self.Proj
 
         StartStates = Proj.AdaptiveSampling(Counts.toarray(),nstates)
@@ -463,8 +471,7 @@ class MSMProject(object):
         #print StartStates
 
         #PK note JustGetIndices gives indices into original conformations
-        RandomConfs = Proj.GetRandomConfsFromEachState(Assignments,NumStates,1,
-                                                       JustGetIndices=True)
+        RandomConfs = Proj.GetRandomConfsFromEachState(Assignments,NumStates,1, JustGetIndices=True)
        
         self.newRuns=[]
         self.macroConfs=[]
@@ -472,8 +479,8 @@ class MSMProject(object):
             num_started = 0
             for i in xrange(NumStates):
                 if i==k:
-                    trajnum  = RandomConfs[i][0][0]
-                    frame_nr = RandomConfs[i][0][1]
+                    trajnum  = int(RandomConfs[i][0][0])
+                    frame_nr = int(RandomConfs[i][0][1])
                     lh5name  = Proj.GetTrajFilename(trajnum)            
                     trajdata    = self.trajData[lh5name]
                     trajname    = trajdata.xtc
@@ -486,16 +493,16 @@ class MSMProject(object):
                     # Use trjconv to write new starting confs
                     while(num_started < self.num_to_start):
                         sys.stderr.write("Writing new start confs.\n")
-                        outfn=os.path.join(self.inp.getOutputDir(),
-                                           'macro%d-%d.gro'%(i,num_started))
-                        args = self.cmdnames.trjconv.split()
-                        args += ["-f", "%s" % trajname, "-s", self.tprfile,
-                              "-o", outfn, 
-                              "-pbc", "mol", "-dump", "%d" % time]
-                        proc = subprocess.Popen(args, stdin=subprocess.PIPE, 
-                                                stdout=sys.stdout, 
-                                                stderr=sys.stderr)
-                        proc.communicate('0')
+                        outfn=os.path.join('macro%d-%d.gro'%(i,num_started))
+
+                        args1 = 'gmx trjconv'
+                        args2 = ["-f", "%s" % trajname, "-s", self.tprfile,"-o", outfn, "-pbc", "mol", "-dump", "%d" % time]
+
+                        for item in args2:
+                            args1 = args1 + ' ' + item
+
+
+                        os.system('echo 0 | {0}'.format(args1))
                         num_started = num_started + 1
                         self.newRuns.append(outfn)
                         if first:
@@ -505,8 +512,11 @@ class MSMProject(object):
         # now set the macro state outputs:
         i=0
         for fname in self.macroConfs:
-            self.out.setOut('macro_conf[%d]'%i, cpc.dataflow.FileValue(fname))
+            with open('sim_details.txt','a') as f:
+                f.write("macro_conf_{1} = {0}".format(fname,i))
             i+=1
+
+        print 'done with macro-states'
                     
         
 if __name__ == '__main__':
@@ -532,4 +542,4 @@ if __name__ == '__main__':
     msmproject.createMicroStates()
 
     # Build the macrostates
-    #msmproject.createMacroStates()
+    msmproject.createMacroStates()
