@@ -43,7 +43,8 @@ class Test(EoP):
         k2 = Kernel(name="mdrun")
         k2.arguments = [
                             "--tpr=topol.tpr",
-                            "--rcon=0.7"
+                            "--rcon=0.7",
+                            "--xtc=traj.xtc"
                         ]
 
         k2.cores=1

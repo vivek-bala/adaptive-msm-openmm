@@ -12,8 +12,8 @@ from radical.entk import KernelBase
 # ------------------------------------------------------------------------------
 # 
 _KERNEL_INFO = {
-            "name":         "mdrun",
-            "description":  "MD simulation kernel",
+            "name":         "traj_collect",
+            "description":  "Trajectory collection and processing to produce data required for MSMProject",
             "arguments":   {"--tpr=":     
                         {
                             "mandatory": True,
@@ -23,11 +23,6 @@ _KERNEL_INFO = {
                         {
                             "mandatory": True,
                             "description": "Configuration file."
-                        },
-                        '--xtc=':
-                        {
-                            "mandatory": True,  
-                            "description": "Trajectory file."
                         }
                     },
             "machine_configs": 
@@ -62,14 +57,14 @@ _KERNEL_INFO = {
 
 # ------------------------------------------------------------------------------
 # 
-class mdrun_kernel(KernelBase):
+class traj_collect_kernel(KernelBase):
 
     # --------------------------------------------------------------------------
     #
     def __init__(self):
         """Le constructor.
         """
-        super(mdrun_kernel, self).__init__(_KERNEL_INFO)
+        super(traj_collect_kernel, self).__init__(_KERNEL_INFO)
 
 
     # --------------------------------------------------------------------------
@@ -92,7 +87,6 @@ class mdrun_kernel(KernelBase):
                         '-noappend',
                         '-cpi', 'state.cpt',
                         '-rcon', self.get_arg("--rcon="), 
-                        '-x', self.get_arg("--xtc")
                     ]
 
         self._executable  = executable
