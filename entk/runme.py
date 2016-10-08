@@ -6,12 +6,13 @@ from radical.entk import EoP, AppManager, Kernel, ResourceHandle
 
 from grompp import grompp_kernel
 from mdrun import mdrun_kernel
+from traj_collect import traj_collect_kernel
 
 import argparse
 import os
 
 ENSEMBLE_SIZE=4
-PIPELINE_SIZE=2
+PIPELINE_SIZE=3
 
 
 class Test(EoP):
@@ -57,6 +58,23 @@ class Test(EoP):
 
         k3 = Kernel(name="traj_collect")
 
+        k3.arguments = [
+                            '--xtc=traj.xtc',
+                            '--system=Protein',
+                            '--xtc_nopbc=traj.nopbc.xtc',
+                            '--reference=reference.pdb',
+                            '--lh5=file.lh5'
+            ]
+
+
+        k3.link_input_data = [
+                                '$STAGE_2_TASK_{0}/traj.xtc'.format(instance),
+                                '$SHARED/checktrajectory.py',
+                                '$SHARED/reference.pdb',`
+                                '$SHARED/convert2lh5.py'
+                            ]
+
+
 
         return k3
 
@@ -81,6 +99,7 @@ if __name__ == '__main__':
     # Register kernels to be used
     app.register_kernels(grompp_kernel)
     app.register_kernels(mdrun_kernel)
+    app.register_kernels(traj_collect_kernel)
 
 
     # Add workload to the application manager
@@ -126,6 +145,9 @@ if __name__ == '__main__':
                         '{0}/equil3.gro'.format(path),
                         './grompp.mdp',
                         '{0}/topol.top'.format(path),
+                        '{0}/checktrajectory.py'.format(path),
+                        './reference.pdb',
+                        './convert2lh5.py'
                     ]
 
     # Submit request for resources + wait till job becomes Active

@@ -91,7 +91,7 @@ class mdrun_kernel(KernelBase):
                         '-s', self.get_arg("--tpr="), 
                         '-cpi', 'state.cpt',
                         '-rcon', self.get_arg("--rcon="), 
-                        '-x', self.get_arg("--xtc")
+                        '-x', self.get_arg("--xtc=")
                     ]
 
         self._executable  = executable

@@ -14,15 +14,30 @@ from radical.entk import KernelBase
 _KERNEL_INFO = {
             "name":         "traj_collect",
             "description":  "Trajectory collection and processing to produce data required for MSMProject",
-            "arguments":   {"--tpr=":     
+            "arguments":   {"--xtc=":     
                         {
                             "mandatory": True,
-                            "description": "Tpr file name"
+                            "description": "Trajectory files"
                         },
-                        "--rcon=":     
+                        "--xtc_nopbc=":     
                         {
                             "mandatory": True,
-                            "description": "Configuration file."
+                            "description": "Trajectory files without PBC"
+                        },
+                        "--system=":     
+                        {
+                            "mandatory": True,
+                            "description": "System being monitored"
+                        },
+                        "--reference=":
+                        {
+                            "mandatory": True,
+                            "description": "Reference filename"
+                        },
+                        "--lh5=":
+                        {
+                            "mandatory": True,
+                            "description": "lh5 filename"
                         }
                     },
             "machine_configs": 
@@ -30,25 +45,25 @@ _KERNEL_INFO = {
                 "*": {
                     "environment"   : None,
                     "pre_exec"      : None,
-                    "executable"    : "mdrun",
+                    "executable"    : "python",
                     "uses_mpi"      : False
                 },
                 "xsede.stampede":{
                     "environment"   : None,
-                    "pre_exec"      : ['. /opt/apps/lmod/lmod/init/sh','module restore','module load boost','module load gromacs/5.1.2'],
-                    "executable"    : "gmx mdrunp",
+                    "pre_exec"      : ['. /opt/apps/lmod/lmod/init/sh','module load python'],
+                    "executable"    : "python",
                     "uses_mpi"      : False
                 },
                 "local.localhost":{
                     "environment"   : None,
-                    "pre_exec"      : ['export PATH=$PATH:/home/vivek91/modules/gromacs-5.1.3/build/bin'],
-                    "executable"    : "gmx mdrun",
+                    "pre_exec"      : [],
+                    "executable"    : "python",
                     "uses_mpi"      : False
                 },
                 "xsede.comet":{
                     "environment"   : None,
-                    "pre_exec"      : ['. /usr/share/Modules/init/sh','module load gromacs'],
-                    "executable"    : "gmx mdrun",
+                    "pre_exec"      : ['. /usr/share/Modules/init/sh','module load python'],
+                    "executable"    : "python",
                     "uses_mpi"      : False
                 }
             }
@@ -82,11 +97,9 @@ class traj_collect_kernel(KernelBase):
         cfg = _KERNEL_INFO["machine_configs"][resource_key]
 
         executable = cfg['executable']
-        arguments  = [  '-quiet', 
-                        '-s', self.get_arg("--tpr="), 
-                        '-noappend',
-                        '-cpi', 'state.cpt',
-                        '-rcon', self.get_arg("--rcon="), 
+        arguments  = [  '--xtc', self.get_arg("--xtc="),
+                        '--system', self.get_arg("--system="), 
+                        '--xtc_nopbc', self.get_arg("--xtc_nopbc="),
                     ]
 
         self._executable  = executable
