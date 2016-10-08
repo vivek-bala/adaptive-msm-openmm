@@ -12,27 +12,17 @@ from radical.entk import KernelBase
 # ------------------------------------------------------------------------------
 # 
 _KERNEL_INFO = {
-            "name":         "grompp",
-            "description":  "Gromacs preprocessing kernel",
-            "arguments":   {"--mdp=":     
+            "name":         "mdrun",
+            "description":  "MD simulation kernel",
+            "arguments":   {"--tpr=":     
                         {
                             "mandatory": True,
-                            "description": "Parameter file"
+                            "description": "Tpr file name"
                         },
-                        "--conf=":     
+                        "--rcon=":     
                         {
                             "mandatory": True,
                             "description": "Configuration file."
-                        },
-                        "--top=":
-                        {
-                            "mandatory": True,
-                            "description": "Topology file"
-                        },
-                        "--out=":
-                        {
-                            "mandatory": True,
-                            "description": "Output file"
                         }
                     },
             "machine_configs": 
@@ -40,25 +30,25 @@ _KERNEL_INFO = {
                 "*": {
                     "environment"   : None,
                     "pre_exec"      : None,
-                    "executable"    : "grompp",
+                    "executable"    : "mdrun",
                     "uses_mpi"      : False
                 },
                 "xsede.stampede":{
                     "environment"   : None,
                     "pre_exec"      : ['. /opt/apps/lmod/lmod/init/sh','module restore','module load boost','module load gromacs/5.1.2'],
-                    "executable"    : "gmx grompp",
+                    "executable"    : "gmx mdrunp",
                     "uses_mpi"      : False
                 },
                 "local.localhost":{
                     "environment"   : None,
                     "pre_exec"      : ['export PATH=$PATH:/home/vivek91/modules/gromacs-5.1.3/build/bin'],
-                    "executable"    : "gmx grompp",
+                    "executable"    : "gmx mdrun",
                     "uses_mpi"      : False
                 },
                 "xsede.comet":{
                     "environment"   : None,
                     "pre_exec"      : ['. /usr/share/Modules/init/sh','module load gromacs'],
-                    "executable"    : "gmx grompp",
+                    "executable"    : "gmx mdrun",
                     "uses_mpi"      : False
                 }
             }
@@ -67,14 +57,14 @@ _KERNEL_INFO = {
 
 # ------------------------------------------------------------------------------
 # 
-class grompp_kernel(KernelBase):
+class mdrun_kernel(KernelBase):
 
     # --------------------------------------------------------------------------
     #
     def __init__(self):
         """Le constructor.
         """
-        super(grompp_kernel, self).__init__(_KERNEL_INFO)
+        super(mdrun_kernel, self).__init__(_KERNEL_INFO)
 
 
     # --------------------------------------------------------------------------
@@ -92,10 +82,11 @@ class grompp_kernel(KernelBase):
         cfg = _KERNEL_INFO["machine_configs"][resource_key]
 
         executable = cfg['executable']
-        arguments  = [  '-f', self.get_arg("--mdp="), 
-                        '-c', self.get_arg("--conf="), 
-                        '-p', self.get_arg("--top="), 
-                        '-o', self.get_arg("--out="), 
+        arguments  = [  '-quiet', 
+                        '-s', self.get_arg("--tpr="), 
+                        '-noappend',
+                        '-cpi state.cpt',
+                        '-rcon', self.get_arg("--rcon="), 
                     ]
 
         self._executable  = executable
