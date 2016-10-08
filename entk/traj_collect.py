@@ -61,7 +61,7 @@ _KERNEL_INFO = {
                 },
                 "local.localhost":{
                     "environment"   : None,
-                    "pre_exec"      : [],
+                    "pre_exec"      : ['export PYTHONPATH=$PYTHONPATH:/home/vivek91/repos/adaptive-msm/tests:/home/vivek91/repos/adaptive-msm/tests/msmbuilder','export PATH=$PATH:/home/vivek91/modules/gromacs-5.1.3/build/bin'],
                     "executable"    : "python",
                     "uses_mpi"      : False
                 },
