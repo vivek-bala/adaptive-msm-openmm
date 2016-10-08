@@ -8,33 +8,37 @@ from grompp import grompp_kernel
 #from mdrun import mdrun_kernel
 
 import argparse
+import os
 
 ENSEMBLE_SIZE=4
 PIPELINE_SIZE=1
 
 
-def Test(EoP):
+class Test(EoP):
 
     def __init__(self, ensemble_size, pipeline_size):
         super(Test,self).__init__(ensemble_size, pipeline_size)
 
-        def stage_1(self, instance):
-            k1 = Kernel(name='grompp')
-            k1.arguments = [  
-                                "--mdp=grompp.mdp",
-                                "--conf=equil{inst}.gro".format(instance),
-                                "--top=topol.top",
-                                "--out=topol.tpr"
-                            ]        
-            k1.cores=1
+    def stage_1(self, instance):
+        k1 = Kernel(name='grompp')
+        k1.arguments = [  
+                            "--mdp=grompp.mdp",
+                            "--conf=equil.gro",
+                            "--top=topol.top",
+                            "--out=topol.tpr"
+                        ]        
+        k1.cores=1
 
-            k1.link_input_data = [
-                                    '$SHARED/grompp.mdp',
-                                    '$SHARED/equil{inst}.gro',
-                                    '$SHARED/topol.top'
-                                ]
+        k1.link_input_data = [
+                                '$SHARED/grompp.mdp',
+                                '$SHARED/equil{0}.gro'.format(instance-1),
+                                '$SHARED/topol.top'
+                            ]
 
-            return k1
+        return k1
+
+
+    def stage_2(self, instance):
 
 
 if __name__ == '__main__':
@@ -91,7 +95,7 @@ if __name__ == '__main__':
                         '{0}/equil1.gro'.format(path),
                         '{0}/equil2.gro'.format(path),
                         '{0}/equil3.gro'.format(path),
-                        '{0}/grompp.mdp'.format(path),
+                        './grompp.mdp',
                         '{0}/topol.top'.format(path),
                     ]
 
