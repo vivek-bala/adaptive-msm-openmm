@@ -61,7 +61,7 @@ _KERNEL_INFO = {
                 },
                 "local.localhost":{
                     "environment"   : None,
-                    "pre_exec"      : ['export PYTHONPATH=$PYTHONPATH:/usr/lib/python2.7/dist-packages:/home/vivek91/repos/adaptive-msm/tests:/home/vivek91/repos/adaptive-msm/tests/msmbuilder','export PATH=$PATH:/home/vivek91/modules/gromacs-5.1.3/build/bin/usr/lib/python2.7/dist-packages:'],
+                    "pre_exec"      : ['export PYTHONPATH=$PYTHONPATH:/usr/lib/python2.7/dist-packages:/home/vivek91/repos/adaptive-msm/tests:/home/vivek91/repos/adaptive-msm/tests/msmbuilder','export PATH=$PATH:/home/vivek91/modules/gromacs-5.1.3/build/bin:/usr/lib/python2.7/dist-packages:'],
                     "executable"    : "python",
                     "uses_mpi"      : False
                 },
