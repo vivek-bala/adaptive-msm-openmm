@@ -70,7 +70,7 @@ class Test(EoP):
         k3.link_input_data = [
                                 '$STAGE_2_TASK_{0}/traj.xtc'.format(instance),
                                 '$SHARED/checktrajectory.py',
-                                '$SHARED/reference.pdb',`
+                                '$SHARED/reference.pdb',
                                 '$SHARED/convert2lh5.py',
                                 '$SHARED/pre_analysis.py'
                             ]
