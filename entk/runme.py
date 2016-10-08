@@ -31,7 +31,7 @@ class Test(EoP):
 
         k1.link_input_data = [
                                 '$SHARED/grompp.mdp',
-                                '$SHARED/equil{0}.gro'.format(instance-1),
+                                '$SHARED/equil{0}.gro > equil.gro'.format(instance-1),
                                 '$SHARED/topol.top'
                             ]
 
@@ -39,6 +39,34 @@ class Test(EoP):
 
 
     def stage_2(self, instance):
+
+        k2 = Kernel(name="mdrun")
+        k2.arguments = [
+                            "--tpr=topol.tpr",
+                            "--rcon=0.7"
+                        ]
+
+        k2.cores=1
+        k2.link_input_data = ['$STAGE_1_TASK_{0}/topol.tpr'.format(instance)]
+
+        return k2
+
+
+    def stage_3(self, instance):
+
+        k3 = Kernel(name="traj_collect")
+
+
+        return k3
+
+
+    def stage_4(self, instance):
+
+        k4 = Kernel(name="msm")
+
+        return k4
+
+        
 
 
 if __name__ == '__main__':
