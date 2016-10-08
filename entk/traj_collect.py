@@ -38,6 +38,11 @@ _KERNEL_INFO = {
                         {
                             "mandatory": True,
                             "description": "lh5 filename"
+                        },
+                        "--tpr=":
+                        {
+                            "mandatory": True,
+                            "description": "tpr filename"
                         }
                     },
             "machine_configs": 
@@ -103,7 +108,8 @@ class traj_collect_kernel(KernelBase):
                         '--system', self.get_arg("--system="), 
                         '--xtc_nopbc', self.get_arg("--xtc_nopbc="),
                         '--reference', self.get_arg("--reference="),
-                        '--lh5', self.get_arg("--lh5=")
+                        '--lh5', self.get_arg("--lh5="),
+                        '--tpr', self.get_arg("--tpr=")
                     ]
 
         self._executable  = executable

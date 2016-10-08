@@ -10,6 +10,7 @@ if __name__ == '__main__':
     parser.add_argument('--xtc_nopbc', help='trajectory without PBC')
     parser.add_argument('--reference', help='reference pdb name')
     parser.add_argument('--lh5', help='lh5 filename')
+    parser.add_argument('--tpr', help='tpr filename')
     args = parser.parse_args()
 
     ## Catch output of gromacs trajcetory
@@ -20,7 +21,7 @@ if __name__ == '__main__':
     os.system('cat error_stream.log | python checktrajectory.py')
 
     # Remove SOL and PBC
-    os.system('echo {0} | gmx trjconv -f {1} -s *.tpr -o {2} -pbc mol'.format(args.system, args.xtc, args.xtc_nopbc))
+    os.system('echo {0} | gmx trjconv -f {1} -s {3} -o {2} -pbc mol'.format(args.system, args.xtc, args.xtc_nopbc, args.tpr))
 
     # Convert xtc to lh5    
     os.system('python convert2lh5.py --inp {0} --ref {1} --out {2}'.format(args.xtc_nopbc, args.reference, args.lh5))

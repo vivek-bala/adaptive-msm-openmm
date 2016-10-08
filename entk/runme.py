@@ -63,11 +63,13 @@ class Test(EoP):
                             '--system=Protein',
                             '--xtc_nopbc=traj.nopbc.xtc',
                             '--reference=reference.pdb',
-                            '--lh5=file.lh5'
+                            '--lh5=file.lh5',
+                            '--tpr=topol.tpr'
             ]
 
 
         k3.link_input_data = [
+                                '$STAGE_1_TASK_{0}/topol.tpr'.format(instance),
                                 '$STAGE_2_TASK_{0}/traj.xtc'.format(instance),
                                 '$SHARED/checktrajectory.py',
                                 '$SHARED/reference.pdb',
