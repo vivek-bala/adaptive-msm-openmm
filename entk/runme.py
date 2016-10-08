@@ -11,7 +11,7 @@ import argparse
 import os
 
 ENSEMBLE_SIZE=4
-PIPELINE_SIZE=1
+PIPELINE_SIZE=2
 
 
 class Test(EoP):

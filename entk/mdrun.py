@@ -89,7 +89,6 @@ class mdrun_kernel(KernelBase):
         executable = cfg['executable']
         arguments  = [  '-quiet', 
                         '-s', self.get_arg("--tpr="), 
-                        '-noappend',
                         '-cpi', 'state.cpt',
                         '-rcon', self.get_arg("--rcon="), 
                         '-x', self.get_arg("--xtc")
