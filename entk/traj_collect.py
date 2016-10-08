@@ -97,9 +97,13 @@ class traj_collect_kernel(KernelBase):
         cfg = _KERNEL_INFO["machine_configs"][resource_key]
 
         executable = cfg['executable']
-        arguments  = [  '--xtc', self.get_arg("--xtc="),
+        arguments  = [  
+                        'pre_analysis.py',
+                        '--xtc', self.get_arg("--xtc="),
                         '--system', self.get_arg("--system="), 
                         '--xtc_nopbc', self.get_arg("--xtc_nopbc="),
+                        '--reference', self.get_arg("--reference="),
+                        '--lh5', self.get_arg("--lh5")
                     ]
 
         self._executable  = executable

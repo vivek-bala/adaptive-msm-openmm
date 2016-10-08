@@ -71,7 +71,8 @@ class Test(EoP):
                                 '$STAGE_2_TASK_{0}/traj.xtc'.format(instance),
                                 '$SHARED/checktrajectory.py',
                                 '$SHARED/reference.pdb',`
-                                '$SHARED/convert2lh5.py'
+                                '$SHARED/convert2lh5.py',
+                                '$SHARED/pre_analysis.py'
                             ]
 
 
@@ -147,7 +148,8 @@ if __name__ == '__main__':
                         '{0}/topol.top'.format(path),
                         '{0}/checktrajectory.py'.format(path),
                         './reference.pdb',
-                        './convert2lh5.py'
+                        './convert2lh5.py',
+                        './pre_analysis.py'
                     ]
 
     # Submit request for resources + wait till job becomes Active
