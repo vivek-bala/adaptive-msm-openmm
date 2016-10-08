@@ -5,7 +5,7 @@ __license__   = "MIT"
 from radical.entk import EoP, AppManager, Kernel, ResourceHandle
 
 from grompp import grompp_kernel
-#from mdrun import mdrun_kernel
+from mdrun import mdrun_kernel
 
 import argparse
 import os
@@ -79,7 +79,7 @@ if __name__ == '__main__':
 
     # Register kernels to be used
     app.register_kernels(grompp_kernel)
-    #app.register_kernels(mdrun_kernel)
+    app.register_kernels(mdrun_kernel)
 
 
     # Add workload to the application manager

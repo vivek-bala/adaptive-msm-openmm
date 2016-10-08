@@ -85,7 +85,7 @@ class mdrun_kernel(KernelBase):
         arguments  = [  '-quiet', 
                         '-s', self.get_arg("--tpr="), 
                         '-noappend',
-                        '-cpi state.cpt',
+                        '-cpi', 'state.cpt',
                         '-rcon', self.get_arg("--rcon="), 
                     ]
 
