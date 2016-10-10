@@ -143,10 +143,10 @@ class Test(EoP):
             for inst in range(1, ENSEMBLE_SIZE+1):
 
                 m1.link_input_data = [
-                                    '$STAGE_3_TASK_{0}/traj.xtc > traj_{0}.xtc'.fromat(inst),
-                                    '$STAGE_3_TASK_{0}/traj.nopbc.xtc > traj_{0}.nopbc.xtc'.fromat(inst),
-                                    '$STAGE_3_TASK_{0}/topol.tpr > topol_{0}.tpr'.fromat(inst),
-                                    '$STAGE_3_TASK_{0}/file.lh5 > file_{0}.lh5'.fromat(inst)
+                                    '$STAGE_3_TASK_{0}/traj.xtc > traj_{0}.xtc'.format(inst),
+                                    '$STAGE_3_TASK_{0}/traj.nopbc.xtc > traj_{0}.nopbc.xtc'.format(inst),
+                                    '$STAGE_3_TASK_{0}/topol.tpr > topol_{0}.tpr'.format(inst),
+                                    '$STAGE_3_TASK_{0}/file.lh5 > file_{0}.lh5'.format(inst)
 
                                 ]
 
