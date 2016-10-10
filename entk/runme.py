@@ -166,7 +166,13 @@ class Test(EoP):
             else:
                 pass
         else:
-            self.set_next_stage(stage=1)
+            if sum(ITER[:ENSEMBLE_SIZE])<8:
+                self.set_next_stage(stage=1)
+            elif sum(ITER[:ENSEMBLE_SIZE])==8:
+                self.set_next_stage(stage=1)
+                ITER[0]+=1
+            else:
+                pass
 
 
 
