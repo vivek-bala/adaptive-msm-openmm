@@ -139,7 +139,8 @@ class Test(EoP):
                             ]
             m1.cores = 1
 
-            m1.link_input_data = ['$SHARED/reference.pdb > reference_0.pdb']
+            m1.link_input_data = ['$SHARED/reference.pdb > reference_0.pdb',
+                                '$SHARED/MSMproject.py']
 
             for inst in range(1, ENSEMBLE_SIZE+1):
 
@@ -178,6 +179,7 @@ if __name__ == '__main__':
     app.register_kernels(mdrun_kernel)
     app.register_kernels(traj_collect_kernel)
     app.register_kernels(echo_kernel)
+    app.register_kernels(msm_kernel)
 
 
     # Add workload to the application manager
@@ -226,7 +228,8 @@ if __name__ == '__main__':
                         '{0}/checktrajectory.py'.format(path),
                         './reference.pdb',
                         './convert2lh5.py',
-                        './pre_analysis.py'
+                        './pre_analysis.py',
+                        './MSMproject.py'
                     ]
 
     # Submit request for resources + wait till job becomes Active
