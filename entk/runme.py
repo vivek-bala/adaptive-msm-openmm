@@ -150,7 +150,8 @@ class Test(EoP):
                                         '$ITER_{1}_STAGE_3_TASK_{0}/traj.xtc > traj_{0}.xtc'.format(inst,i),
                                         '$ITER_{1}_STAGE_3_TASK_{0}/traj.nopbc.xtc > traj_{0}.nopbc.xtc'.format(inst,i),
                                         '$ITER_{1}_STAGE_3_TASK_{0}/topol.tpr > topol_{0}.tpr'.format(inst,i),
-                                        '$ITER_{1}_STAGE_3_TASK_{0}/file.lh5 > file_{0}.lh5'.format(inst,i)
+                                        '$ITER_{1}_STAGE_3_TASK_{0}/file.lh5 > file_{0}.lh5'.format(inst,i),
+                                        '$ITER_{1}_STAGE_3_TASK_{0}/traj_info.txt > traj_info_{0}.txt'.format(inst,i)
 
                                     ]
 
