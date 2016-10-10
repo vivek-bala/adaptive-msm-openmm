@@ -116,7 +116,7 @@ class MSMProject(object):
         self.filelist=[]
         self.trajData=dict()
         #ta=self.inp.getInput('trajectories')
-        i=0
+        i=1
 
         for file in glob.glob('*.tpr'):
             lh5='file_{0}.lh5'.format(i)
