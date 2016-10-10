@@ -159,11 +159,14 @@ class Test(EoP):
 
     def branch_4(self, instance):
 
-        if ITER[instance-1]!=2:
-            ITER[instance-1]+=1
-            self.set_next_stage(stage=1)  
+        if instance <= ENSEMBLE_SIZE:
+            if ITER[instance-1]!=2:
+                ITER[instance-1]+=1
+                self.set_next_stage(stage=1)  
+            else:
+                pass
         else:
-            pass
+            self.set_next_stage(stage=1)
 
 
 
