@@ -140,7 +140,7 @@ class Test(EoP):
 
             m1.link_input_data = ['$SHARED/reference.pdb > reference_0.pdb']
 
-            for inst in ENSEMBLE_SIZE:
+            for inst in range(1, ENSEMBLE_SIZE+1):
 
                 m1.link_input_data = [
                                     '$STAGE_3_TASK_{0}/traj.xtc > traj_{0}.xtc'.fromat(inst),
