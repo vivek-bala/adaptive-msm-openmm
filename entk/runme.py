@@ -8,6 +8,7 @@ from grompp import grompp_kernel
 from mdrun import mdrun_kernel
 from traj_collect import traj_collect_kernel
 from echo import echo_kernel
+from msm_analysis import msm_kernel
 
 import argparse
 import os
@@ -126,7 +127,7 @@ class Test(EoP):
 
         else:
 
-            m1 = Kernel(name="msm", ktype='monitor')
+            m1 = Kernel(name="msm")
             m1.arguments = [
                                 '--macro=10',
                                 '--micro=100',
