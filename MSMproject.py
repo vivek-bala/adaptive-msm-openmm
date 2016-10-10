@@ -528,18 +528,22 @@ if __name__ == '__main__':
     parser.add_argument("--grpname", help="groupname")
     parser.add_argument("--lag", help="lag time")
     parser.add_argument("--num_sims", help="number of simulations per state")
+    parser.add_argument("--ensembles", help="number of min simulations")
     args = parser.parse_args()
 
 
-    msmproject = MSMProject(microstates=args.micro, 
-                            macrostates=args.macro, 
-                            reference=args.reference, 
-                            grpname=args.grpname, 
-                            lag_time=args.lag, 
-                            num_sims=args.num_sims)
+    if ((len(glob.glob('*.tpr'))>=int(args.ensembles)) and (len(glob.glob('*.nopbc.xtc'))>=int(args.ensembles))
+        and (len(glob.glob('*.xtc'))>=int(args.ensembles)) and (len(glob.glob('*.lh5'))>=int(args.ensembles))):
 
-    # Build the microstates
-    msmproject.createMicroStates()
+        msmproject = MSMProject(microstates=args.micro, 
+                                macrostates=args.macro, 
+                                reference=args.reference, 
+                                grpname=args.grpname, 
+                                lag_time=args.lag, 
+                                num_sims=args.num_sims)
 
-    # Build the macrostates
-    msmproject.createMacroStates()
+        # Build the microstates
+        msmproject.createMicroStates()
+
+        # Build the macrostates
+        msmproject.createMacroStates()

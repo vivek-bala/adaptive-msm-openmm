@@ -12,37 +12,42 @@ from radical.entk import KernelBase
 # ------------------------------------------------------------------------------
 # 
 _KERNEL_INFO = {
-            "name":         "traj_collect",
-            "description":  "Trajectory collection and processing to produce data required for MSMProject",
-            "arguments":   {"--xtc=":     
+            "name":         "msm",
+            "description":  "MSM Analysis kernel",
+            "arguments":   {"--micro=":     
                         {
                             "mandatory": True,
-                            "description": "Trajectory files"
+                            "description": "Number of microstates"
                         },
-                        "--xtc_nopbc=":     
+                        "--macro=":     
                         {
                             "mandatory": True,
-                            "description": "Trajectory files without PBC"
-                        },
-                        "--system=":     
-                        {
-                            "mandatory": True,
-                            "description": "System being monitored"
+                            "description": "Number of macrostates"
                         },
                         "--reference=":
                         {
                             "mandatory": True,
-                            "description": "Reference filename"
+                            "description": "Reference pdb file"
                         },
-                        "--lh5=":
+                        "--grpname=":
                         {
                             "mandatory": True,
-                            "description": "lh5 filename"
+                            "description": "Group to study"
                         },
-                        "--tpr=":
+                        "--lag=":
                         {
                             "mandatory": True,
-                            "description": "tpr filename"
+                            "description": "Lag time"
+                        },
+                        "--num_sims=":
+                        {
+                            "mandatory": True,
+                            "description": "Number of simulations per macrostate"
+                        },
+                        "--ensembles=":
+                        {
+                            "mandatory": True,
+                            "description": "Number of min simulations"
                         }
                     },
             "machine_configs": 
@@ -77,14 +82,14 @@ _KERNEL_INFO = {
 
 # ------------------------------------------------------------------------------
 # 
-class traj_collect_kernel(KernelBase):
+class msm_kernel(KernelBase):
 
     # --------------------------------------------------------------------------
     #
     def __init__(self):
         """Le constructor.
         """
-        super(traj_collect_kernel, self).__init__(_KERNEL_INFO)
+        super(msm_kernel, self).__init__(_KERNEL_INFO)
 
 
     # --------------------------------------------------------------------------
@@ -103,13 +108,14 @@ class traj_collect_kernel(KernelBase):
 
         executable = cfg['executable']
         arguments  = [  
-                        'pre_analysis.py',
-                        '--xtc', self.get_arg("--xtc="),
-                        '--system', self.get_arg("--system="), 
-                        '--xtc_nopbc', self.get_arg("--xtc_nopbc="),
-                        '--reference', self.get_arg("--reference="),
-                        '--lh5', self.get_arg("--lh5="),
-                        '--tpr', self.get_arg("--tpr=")
+                        'MSMproject.py',
+                        '--micro', self.get_arg("--micro="), 
+                        '--macro', self.get_arg("--macro="), 
+                        '--reference', self.get_arg("--reference="), 
+                        '--grpname', self.get_arg("--grpname="), 
+                        '--lag', self.get_arg("--lag="),
+                        '--num_sims', self.get_arg("--num_sims="),
+                        '--ensembles', self.get_arg("--ensembles=")
                     ]
 
         self._executable  = executable
