@@ -13,10 +13,13 @@ from msm_analysis import msm_kernel
 import argparse
 import os
 
+
+## USER PARS
 ENSEMBLE_SIZE=4
 PIPELINE_SIZE=3
+CLUSTER_GEN=0
 
-MSM_ON_FLAG=True
+RECLUSTER=1.0
 
 ITER=[1 for x in range(1, ENSEMBLE_SIZE+2)]
 
@@ -161,18 +164,20 @@ class Test(EoP):
     def branch_4(self, instance):
 
         if instance <= ENSEMBLE_SIZE:
-            if ITER[instance-1]!=2:
-                ITER[instance-1]+=1
+
+            if TERMINATE==False:
                 self.set_next_stage(stage=1)  
             else:
                 pass
+
         else:
-            if ((sum(ITER[:ENSEMBLE_SIZE])<8)and(MSM_ON_FLAG)):
+
+            if ((TOTAL_TRAJ - RECLUSTER*CLUSTER_GEN > RECLUSTER)or(RECLUSTER_NOW)):
                 self.set_next_stage(stage=4)
-            elif ((sum(ITER[:ENSEMBLE_SIZE])==8)and (MSM_ON_FLAG)):
-                self.set_next_stage(stage=1)
-                MSM_ON_FLAG=False
+                RECLUSTER_NOW=False
+                CLUSTER_GEN+=1
             else:
+                TERMINATE=True
                 pass
 
 
