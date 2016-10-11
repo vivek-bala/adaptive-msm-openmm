@@ -1,5 +1,0 @@
-#!/home/vivek/Research/repos/adaptive-msm/entk/myenv/bin/python2
-
-import radical.pilot
-print  radical.pilot.version_detail
-
