@@ -40,10 +40,10 @@ from numpy import array,argmax
 import numpy
 #import random
 
-import matplotlib
+#import matplotlib
 #Use a non GUI backend for matplotlib
-matplotlib.use('Agg')
-import matplotlib.pyplot as plt
+#matplotlib.use('Agg')
+#import matplotlib.pyplot as plt
 
 
 # Make sure msmbuilder is in the PYTHONPATH
