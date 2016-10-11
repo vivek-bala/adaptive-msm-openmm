@@ -180,12 +180,13 @@ class Test(EoP):
 
         else:
 
-            if ((TOTAL_TRAJ - RECLUSTER*CLUSTER_GEN > RECLUSTER)):
-                self.set_next_stage(stage=4)
-                CLUSTER_GEN+=1
-            else:
-                TERMINATE=True
-                pass
+            #if ((TOTAL_TRAJ - RECLUSTER*CLUSTER_GEN > RECLUSTER)):
+            print self.get_output(stage=4, instance=ENSEMBLE_SIZE+1)
+            self.set_next_stage(stage=4)
+            #    CLUSTER_GEN+=1
+            #else:
+            #    TERMINATE=True
+            #    pass
 
 
 

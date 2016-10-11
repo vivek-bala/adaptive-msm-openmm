@@ -524,15 +524,17 @@ class MSMProject(object):
 
         total_traj_ns = 0.0
 
-        with open('traj_info_{0}.txt'.format(i),'r') as f:
-            lines = f.readlines()
-            ns = float(lines[0].strip().split('=')[1].strip())
-            dt = float(lines[1].strip().split('=')[1].strip())
-            frames = int(lines[2].strip().split('=')[1].strip())
+        for filename in glob.glob('traj_info_*.txt'):
 
-            ns=dt*(frames-1)/1000.
+            with open(filename,'r') as f:
+                lines = f.readlines()
+                ns = float(lines[0].strip().split('=')[1].strip())
+                dt = float(lines[1].strip().split('=')[1].strip())
+                frames = int(lines[2].strip().split('=')[1].strip())
+
+                ns=dt*(frames-1)/1000.
                     
-            total_traj_ns += ns
+                total_traj_ns += ns
 
         print 'Total_ns={0}'.format(total_traj_ns)
         
@@ -549,18 +551,22 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
 
-    msmproject = MSMProject(microstates=args.micro, 
-                                macrostates=args.macro, 
-                                reference=args.reference, 
-                                grpname=args.grpname, 
-                                lag_time=args.lag, 
-                                num_sims=args.num_sims)
+    if ((len(glob.glob('*.tpr'))>=int(args.ensembles)) and (len(glob.glob('*.nopbc.xtc'))>=int(args.ensembles)) 
+        and (len(glob.glob('*.xtc'))>=int(args.ensembles)) and (len(glob.glob('*.lh5'))>=int(args.ensembles))):
 
-    # Build the microstates
-    msmproject.createMicroStates()
 
-    # Build the macrostates
-    msmproject.createMacroStates()
+        msmproject = MSMProject(microstates=args.micro, 
+                            macrostates=args.macro, 
+                            reference=args.reference, 
+                            grpname=args.grpname, 
+                            lag_time=args.lag, 
+                            num_sims=args.num_sims)
 
-    # Compute total traj ns
-    msmproject.calc_total_ns()
+        # Build the microstates
+        msmproject.createMicroStates()
+
+        # Build the macrostates
+        msmproject.createMacroStates()
+
+        # Compute total traj ns
+        msmproject.calc_total_ns()
