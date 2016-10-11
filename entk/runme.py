@@ -17,9 +17,9 @@ import os
 ## USER PARS
 ENSEMBLE_SIZE=4
 PIPELINE_SIZE=3
+
+
 CLUSTER_GEN=0
-
-
 TERMINATE=False
 TOTAL_TRAJ=2.0
 RECLUSTER=1.0
@@ -166,6 +166,11 @@ class Test(EoP):
 
     def branch_4(self, instance):
 
+        global TERMINATE
+        global TOTAL_TRAJ
+        global RECLUSTER
+        global CLUSTER_GEN
+
         if instance <= ENSEMBLE_SIZE:
 
             if TERMINATE==False:
@@ -186,15 +191,6 @@ class Test(EoP):
 
 
 if __name__ == '__main__':
-
-    # Touch
-
-    CLUSTER_GEN=0
-
-    TERMINATE=False
-    TOTAL_TRAJ=2.0
-    RECLUSTER=1.0
-
 
     # Create pattern object with desired ensemble size, pipeline size
     pipe = Test(ensemble_size=ENSEMBLE_SIZE+1, pipeline_size=PIPELINE_SIZE+1)

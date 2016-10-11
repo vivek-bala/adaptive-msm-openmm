@@ -118,7 +118,7 @@ class MSMProject(object):
         #ta=self.inp.getInput('trajectories')
         i=0
 
-        for file in glob.glob('*.tpr'):
+        for file in glob.glob('*.lh5'):
             lh5='file_{0}.lh5'.format(i)
             xtc='traj_{0}.xtc'.format(i)
             xtc_nopbc='traj_{0}.nopbc.xtc'.format(i)
@@ -517,7 +517,24 @@ class MSMProject(object):
             i+=1
 
         print 'done with macro-states'
+
+
+
+    def calc_total_ns(self):
+
+        total_traj_ns = 0.0
+
+        with open('traj_info_{0}.txt'.format(i),'r') as f:
+            lines = f.readlines()
+            ns = float(lines[0].strip().split('=')[1].strip())
+            dt = float(lines[1].strip().split('=')[1].strip())
+            frames = int(lines[2].strip().split('=')[1].strip())
+
+            ns=dt*(frames-1)/1000.
                     
+            total_traj_ns += ns
+
+        print 'Total_ns={0}'.format(total_traj_ns)
         
 if __name__ == '__main__':
 
@@ -544,3 +561,6 @@ if __name__ == '__main__':
 
     # Build the macrostates
     msmproject.createMacroStates()
+
+    # Compute total traj ns
+    msmproject.calc_total_ns()
