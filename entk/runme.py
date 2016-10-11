@@ -20,7 +20,7 @@ PIPELINE_SIZE=3
 CLUSTER_GEN=0
 
 
-TERMINATE-False
+TERMINATE=False
 TOTAL_TRAJ=2.0
 RECLUSTER=1.0
 
@@ -191,7 +191,7 @@ if __name__ == '__main__':
 
     CLUSTER_GEN=0
 
-    TERMINATE-False
+    TERMINATE=False
     TOTAL_TRAJ=2.0
     RECLUSTER=1.0
 
