@@ -19,6 +19,9 @@ ENSEMBLE_SIZE=4
 PIPELINE_SIZE=3
 CLUSTER_GEN=0
 
+
+TERMINATE-False
+TOTAL_TRAJ=2.0
 RECLUSTER=1.0
 
 ITER=[1 for x in range(1, ENSEMBLE_SIZE+2)]
@@ -172,9 +175,8 @@ class Test(EoP):
 
         else:
 
-            if ((TOTAL_TRAJ - RECLUSTER*CLUSTER_GEN > RECLUSTER)or(RECLUSTER_NOW)):
+            if ((TOTAL_TRAJ - RECLUSTER*CLUSTER_GEN > RECLUSTER)):
                 self.set_next_stage(stage=4)
-                RECLUSTER_NOW=False
                 CLUSTER_GEN+=1
             else:
                 TERMINATE=True
@@ -184,6 +186,15 @@ class Test(EoP):
 
 
 if __name__ == '__main__':
+
+    # Touch
+
+    CLUSTER_GEN=0
+
+    TERMINATE-False
+    TOTAL_TRAJ=2.0
+    RECLUSTER=1.0
+
 
     # Create pattern object with desired ensemble size, pipeline size
     pipe = Test(ensemble_size=ENSEMBLE_SIZE+1, pipeline_size=PIPELINE_SIZE+1)
