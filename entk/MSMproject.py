@@ -119,17 +119,21 @@ class MSMProject(object):
         i=1
 
         for file in glob.glob('*.lh5'):
-            lh5='file_{0}.lh5'.format(i)
-            xtc='traj_{0}.xtc'.format(i)
-            xtc_nopbc='traj_{0}.nopbc.xtc'.format(i)
-            tpr='topol_{0}.tpr'.format(i)
+            index = file.split('.')[0].strip().split('_')[1].strip()
+            lh5='file_{0}.lh5'.format(index)
+            xtc='traj_{0}.xtc'.format(index)
+            xtc_nopbc='traj_{0}.nopbc.xtc'.format(index)
+            tpr='topol_{0}.tpr'.format(index)
             self.tpr = tpr
 
-            with open('traj_info_{0}.txt'.format(i),'r') as f:
-                lines = f.readlines()
-                ns = float(lines[0].strip().split('=')[1].strip())
-                dt = float(lines[1].strip().split('=')[1].strip())
-                frames = int(lines[2].strip().split('=')[1].strip())
+            try:
+                with open('traj_info_{0}.txt'.format(index),'r') as f:
+                    lines = f.readlines()
+                    ns = float(lines[0].strip().split('=')[1].strip())
+                    dt = float(lines[1].strip().split('=')[1].strip())
+                    frames = int(lines[2].strip().split('=')[1].strip())
+            except:
+                return None
             self.filelist.append([lh5])
             self.trajData[lh5]=TrajData(lh5, xtc, xtc_nopbc, tpr, dt, frames)
             self.avgtime += dt * (frames-1)/1000.
@@ -547,21 +551,23 @@ if __name__ == '__main__':
     parser.add_argument("--grpname", help="groupname")
     parser.add_argument("--lag", help="lag time")
     parser.add_argument("--num_sims", help="number of simulations per state")
-    parser.add_argument("--ensembles", help="number of min simulations")
+    #parser.add_argument("--ensembles", help="number of min simulations")
     args = parser.parse_args()
 
 
-    if ((len(glob.glob('*.tpr'))>=int(args.ensembles)) and (len(glob.glob('*.nopbc.xtc'))>=int(args.ensembles)) 
-        and (len(glob.glob('*.xtc'))>=int(args.ensembles)) and (len(glob.glob('*.lh5'))>=int(args.ensembles))):
+    #if ((len(glob.glob('*.tpr'))>=int(args.ensembles)) and (len(glob.glob('*.nopbc.xtc'))>=int(args.ensembles)) 
+    #    and (len(glob.glob('*.xtc'))>=int(args.ensembles)) and (len(glob.glob('*.lh5'))>=int(args.ensembles))):
 
 
-        msmproject = MSMProject(microstates=args.micro, 
+    msmproject = MSMProject(microstates=args.micro, 
                             macrostates=args.macro, 
                             reference=args.reference, 
                             grpname=args.grpname, 
                             lag_time=args.lag, 
                             num_sims=args.num_sims)
 
+
+    if MSMProject != None:
         # Build the microstates
         msmproject.createMicroStates()
 
@@ -570,3 +576,7 @@ if __name__ == '__main__':
 
         # Compute total traj ns
         msmproject.calc_total_ns()
+
+    else:
+
+        print 'Error ! Probably a read error of one of the files !'
