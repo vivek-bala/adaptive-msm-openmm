@@ -26,7 +26,7 @@ TOTAL_TRAJ=0.0
 RECLUSTER=1.0
 RECLUSTER_NOW=True
 
-ITER=[1 for x in range(1, ENSEMBLE_SIZE+2)]
+ITER=[1 for x in range(1, ENSEMBLE_SIZE+1)]
 
 class Test(EoP):
 
@@ -47,9 +47,15 @@ class Test(EoP):
 
             k1.link_input_data = [
                                     '$SHARED/grompp.mdp',
-                                    '$SHARED/equil{0}.gro > equil.gro'.format(instance-1),
                                     '$SHARED/topol.top'
                                 ]
+
+            if (RECLUSTER_NOW==True):
+                k1.link_input_data += ['$SHARED/equil{0}.gro > equil.gro'.format(instance-1)]
+            else:
+                k1.link_input_data += ['$ITER_{0}_STAGE_4_TASK_5/new_run_{1}.gro > equil.gro'.format(
+                                        ITER[instance-1]-1, instance)]
+
 
             return k1
 
@@ -142,8 +148,8 @@ class Test(EoP):
                                 '--reference=reference_0.pdb',
                                 '--grpname=Protein',
                                 '--lag=2',
-                                '--num_sims=20',
-                                '--ensembles=4'
+                                '--num_sims=20'
+#                                '--ensembles=4'
                             ]
             m1.cores = 1
 
@@ -177,7 +183,8 @@ class Test(EoP):
         if instance <= ENSEMBLE_SIZE:
 
             if TERMINATE==False:
-                self.set_next_stage(stage=1)  
+                self.set_next_stage(stage=1)
+                ITER[instance-1]+=1
             else:
                 pass
 
@@ -196,8 +203,9 @@ class Test(EoP):
                     ## Setup new simulations with new configurations
                     
                     ## Reiterate MSM in a while
-                    self.set_next_stage(stage=4)
+                    self.set_next_stage(stage=1)
                     RECLUSTER_NOW=False
+                    self._ensemble_size = 200+1
                 else:
 
                     # Yaayyy !

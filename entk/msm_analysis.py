@@ -43,12 +43,12 @@ _KERNEL_INFO = {
                         {
                             "mandatory": True,
                             "description": "Number of simulations per macrostate"
-                        },
-                        "--ensembles=":
-                        {
-                            "mandatory": True,
-                            "description": "Number of min simulations"
                         }
+#                        "--ensembles=":
+#                        {
+#                            "mandatory": True,
+#                            "description": "Number of min simulations"
+#                        }
                     },
             "machine_configs": 
             {
@@ -114,8 +114,8 @@ class msm_kernel(KernelBase):
                         '--reference', self.get_arg("--reference="), 
                         '--grpname', self.get_arg("--grpname="), 
                         '--lag', self.get_arg("--lag="),
-                        '--num_sims', self.get_arg("--num_sims="),
-                        '--ensembles', self.get_arg("--ensembles=")
+                        '--num_sims', self.get_arg("--num_sims=")
+#                        '--ensembles', self.get_arg("--ensembles=")
                     ]
 
         self._executable  = executable
