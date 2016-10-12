@@ -178,6 +178,7 @@ class Test(EoP):
         global RECLUSTER
         global CLUSTER_GEN
         global RECLUSTER_NOW
+        global ENSEMBLE_SIZE
 
         if instance <= ENSEMBLE_SIZE:
 
@@ -189,7 +190,8 @@ class Test(EoP):
 
         else:
 
-            k = str(self.get_output(stage=4, instance=ENSEMBLE_SIZE+1))
+            k = str(self.get_output(iter=ITER[instance-1],stage=4, instance=ENSEMBLE_SIZE+1))
+            ITER[instance-1]+=1
 
             try:
                 step = re.compile('^Total_ns=([0-9.]*)', re.MULTILINE)
@@ -199,12 +201,16 @@ class Test(EoP):
                 print 'Diff:', (TOTAL_TRAJ - RECLUSTER*CLUSTER_GEN)
                 if ((TOTAL_TRAJ - RECLUSTER*CLUSTER_GEN > RECLUSTER)or(RECLUSTER_NOW)):
                     print 'Total so far: ',TOTAL_TRAJ
+
+                    # Lag time
+                    #sleep()
                     ## Setup new simulations with new configurations
                     
                     ## Reiterate MSM in a while
-                    self.set_next_stage(stage=1)
+                    self.set_next_stage(stage=4)
                     RECLUSTER_NOW=False
                     self._ensemble_size = 200+1
+                    ENSEMBLE_SIZE=200
                 else:
 
                     # Yaayyy !
