@@ -12,6 +12,7 @@ from msm_analysis import msm_kernel
 
 import argparse
 import os
+import re
 
 
 ## USER PARS
@@ -21,8 +22,9 @@ PIPELINE_SIZE=3
 
 CLUSTER_GEN=0
 TERMINATE=False
-TOTAL_TRAJ=2.0
+TOTAL_TRAJ=0.0
 RECLUSTER=1.0
+RECLUSTER_NOW=True
 
 ITER=[1 for x in range(1, ENSEMBLE_SIZE+2)]
 
@@ -140,7 +142,7 @@ class Test(EoP):
                                 '--reference=reference_0.pdb',
                                 '--grpname=Protein',
                                 '--lag=2',
-                                '--num_sims=4',
+                                '--num_sims=20',
                                 '--ensembles=4'
                             ]
             m1.cores = 1
@@ -170,6 +172,7 @@ class Test(EoP):
         global TOTAL_TRAJ
         global RECLUSTER
         global CLUSTER_GEN
+        global RECLUSTER_NOW
 
         if instance <= ENSEMBLE_SIZE:
 
@@ -180,13 +183,31 @@ class Test(EoP):
 
         else:
 
-            #if ((TOTAL_TRAJ - RECLUSTER*CLUSTER_GEN > RECLUSTER)):
-            print self.get_output(stage=4, instance=ENSEMBLE_SIZE+1)
-            self.set_next_stage(stage=4)
-            #    CLUSTER_GEN+=1
-            #else:
-            #    TERMINATE=True
-            #    pass
+            k = str(self.get_output(stage=4, instance=ENSEMBLE_SIZE+1))
+
+            try:
+                step = re.compile('^Total_ns=([0-9.]*)', re.MULTILINE)
+                match = step.search(k)
+                TOTAL_TRAJ+=float(match.group(1))
+                print 'Traj: ',TOTAL_TRAJ, ' gen: ', CLUSTER_GEN
+                print 'Diff:', (TOTAL_TRAJ - RECLUSTER*CLUSTER_GEN)
+                if ((TOTAL_TRAJ - RECLUSTER*CLUSTER_GEN > RECLUSTER)or(RECLUSTER_NOW)):
+                    print 'Total so far: ',TOTAL_TRAJ
+                    ## Setup new simulations with new configurations
+                    
+                    ## Reiterate MSM in a while
+                    self.set_next_stage(stage=4)
+                    RECLUSTER_NOW=False
+                else:
+
+                    # Yaayyy !
+                    print 'Reached convergence, terminate !'
+                    TERMINATE=True
+
+                CLUSTER_GEN+=1
+            except:
+                print 'Check-> Not enough simulations. Generate more !'
+                self.set_next_stage(stage=4)
 
 
 
