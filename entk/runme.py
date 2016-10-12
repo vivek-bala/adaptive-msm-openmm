@@ -149,7 +149,6 @@ class Test(EoP):
                                 '--grpname=Protein',
                                 '--lag=2',
                                 '--num_sims=20'
-#                                '--ensembles=4'
                             ]
             m1.cores = 1
 
