@@ -142,8 +142,9 @@ class Test(EoP):
                                 '--reference=reference_0.pdb',
                                 '--grpname=Protein',
                                 '--lag=2',
-                                '--num_sims=20',
-                                '--ensembles=4'
+                                '--num_sims=20'
+#                                '--ensembles=4'
+
                             ]
             m1.cores = 1
 
