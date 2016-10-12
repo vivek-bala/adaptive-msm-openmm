@@ -115,6 +115,8 @@ class MSMProject(object):
         self.avgtime=0.
         self.filelist=[]
         self.trajData=dict()
+
+        self._flag=True
         #ta=self.inp.getInput('trajectories')
         i=1
 
@@ -133,7 +135,8 @@ class MSMProject(object):
                     dt = float(lines[1].strip().split('=')[1].strip())
                     frames = int(lines[2].strip().split('=')[1].strip())
             except:
-                return None
+                self._flag=False
+
             self.filelist.append([lh5])
             self.trajData[lh5]=TrajData(lh5, xtc, xtc_nopbc, tpr, dt, frames)
             self.avgtime += dt * (frames-1)/1000.
@@ -143,6 +146,14 @@ class MSMProject(object):
         sys.stderr.write("filelist size=%d.\n"%(len(self.filelist)))
 
         random.seed()  
+
+        if len(self.filelist)==0:
+            self._flag=False
+
+
+    @property
+    def flag(self):
+        return self._flag
 
     def getNewSimTime(self):
         ''' Compute a new simulation time from a half-normal distribution '''
@@ -567,7 +578,7 @@ if __name__ == '__main__':
                             num_sims=args.num_sims)
 
 
-    if MSMProject != None:
+    if msmproject.flag != False:
         # Build the microstates
         msmproject.createMicroStates()
 
