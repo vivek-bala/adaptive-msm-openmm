@@ -25,3 +25,8 @@ if __name__ == '__main__':
         f.write('ns = {0}\n'.format(ns))
         f.write('dt = {0}\n'.format(dt))
         f.write('frames = {0}\n'.format(frames))
+
+
+    total_traj_ns = dt*(frames-1)/1000
+
+    print 'Total_ns={0}'.format(total_traj_ns)

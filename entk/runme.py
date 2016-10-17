@@ -18,15 +18,24 @@ import re
 ## USER PARS
 ENSEMBLE_SIZE=4
 PIPELINE_SIZE=3
-
-
+LAG_TIME=10
 CLUSTER_GEN=0
 TERMINATE=False
 TOTAL_TRAJ=0.0
 RECLUSTER=1.0
 RECLUSTER_NOW=True
 
-ITER=[1 for x in range(1, ENSEMBLE_SIZE+1)]
+
+## INTERNAL PARS
+USABLE_SIM_DATA = dict()
+USABLE_SIM_LIST = list()
+USABLE_SIM_TASK = []
+USABLE_SIM_ITER = [1 for x in range(1, ENSEMBLE_SIZE+1)]
+
+ANALYSIS_ITER=0
+ANALYSIS_TASK=0
+#ANALYSIS_TASK=[ENSEMBLE_SIZE for x in range(1, ENSEMBLE_SIZE+1)]
+ITER=[1 for x in range(1, ENSEMBLE_SIZE+2)]
 
 class Test(EoP):
 
@@ -36,6 +45,7 @@ class Test(EoP):
     def stage_1(self, instance):
 
         if instance <= ENSEMBLE_SIZE:
+
             k1 = Kernel(name='grompp')
             k1.arguments = [  
                                 "--mdp=grompp.mdp",
@@ -50,22 +60,14 @@ class Test(EoP):
                                     '$SHARED/topol.top'
                                 ]
 
-            if (RECLUSTER_NOW==True):
-                k1.link_input_data += ['$SHARED/equil{0}.gro > equil.gro'.format(instance-1)]
-            else:
-                k1.link_input_data += ['$ITER_{0}_STAGE_4_TASK_5/new_run_{1}.gro > equil.gro'.format(
-                                        ITER[instance-1]-1, instance)]
-
+            
+            k1.link_input_data += ['$SHARED/equil{0}.gro > equil.gro'.format(instance-1)]            
 
             return k1
 
         else:
 
-            k1 = Kernel(name="echo")
-            k1.arguments = ["--file=output.txt","--text=dummy"]
-            k1.cores = 1
-
-            return k1
+            return None
 
 
     def stage_2(self, instance):
@@ -86,11 +88,7 @@ class Test(EoP):
 
         else:
 
-            k1 = Kernel(name="echo")
-            k1.arguments = ["--file=output.txt","--text=dummy"]
-            k1.cores = 1
-
-            return k1
+            return None
 
 
     def stage_3(self, instance):
@@ -122,63 +120,108 @@ class Test(EoP):
 
         else:
 
-            k1 = Kernel(name="echo")
-            k1.arguments = ["--file=output.txt","--text=dummy"]
-            k1.cores = 1
+            return None
 
-            return k1
+    def branch_3(self, instance):
+
+
+        if instance <= ENSEMBLE_SIZE:
+
+            # Logging vars
+            global USABLE_SIM_DATA
+            global USABLE_SIM_LIST
+
+            # Decision making vars
+            global TOTAL_TRAJ
+            global RECLUSTER
+            global CLUSTER_GEN
+            global RECLUSTER_NOW
+
+            k = str(self.get_output(stage=3, instance=instance))
+            step = re.compile('^Total_ns=([0-9.]*)', re.MULTILINE)
+            match = step.search(k)
+            TOTAL_TRAJ+=float(match.group(1))
+
+            if float(match.group(1)) > 0.0:
+
+                # Note the required sims
+                USABLE_SIM_DATA = {'instance': instance, 'iter': ITER[instance-1]}
+                USABLE_SIM_LIST.append(USABLE_SIM_DATA)
+
+
+            if ((TOTAL_TRAJ - RECLUSTER*CLUSTER_GEN > RECLUSTER)or(RECLUSTER_NOW)):
+
+                print 'Total traj: ', TOTAL_TRAJ
+                print 'Diff: ', (TOTAL_TRAJ - RECLUSTER*CLUSTER_GEN),', RECLUSTER: ', RECLUSTER
+
+                # Cancel currently runnings sim tasks
+                self.cancel_all_tasks = True
+
+                # Run MSM
+                self.set_next_stage(stage=4)
+
+                # Reassignments
+                CLUSTER_GEN+=1
+                RECLUSTER_NOW=False
+
+            else:
+
+                self.set_next_stage(stage=1)            
+
+        else:
+
+            pass
 
 
     def stage_4(self, instance):
 
         if instance <= ENSEMBLE_SIZE:
 
-            k1 = Kernel(name="echo")
-            k1.arguments = ["--file=output.txt","--text=dummy"]
-            k1.cores = 1
+            return None
 
-            return k1
+        m1 = Kernel(name="msm")
+        m1.arguments = [
+                            '--macro=10',
+                            '--micro=100',
+                            '--reference=reference_0.pdb',
+                            '--grpname=Protein',
+                            '--lag=2',
+                            '--num_sims=20'
+                        ]
+        m1.cores = 1
 
-        else:
-
-            m1 = Kernel(name="msm")
-            m1.arguments = [
-                                '--macro=10',
-                                '--micro=100',
-                                '--reference=reference_0.pdb',
-                                '--grpname=Protein',
-                                '--lag=2',
-                                '--num_sims=20'
-                            ]
-            m1.cores = 1
-
-            m1.link_input_data = ['$SHARED/reference.pdb > reference_0.pdb',
-                                '$SHARED/MSMproject.py']
+        m1.link_input_data = ['$SHARED/reference.pdb > reference_0.pdb',
+                            '$SHARED/MSMproject.py']
 
 
-            for i in range(1, ITER[instance-1]+1):
-                for inst in range(1, ENSEMBLE_SIZE+1):
+        for item in USABLE_SIM_LIST:
 
-                    m1.link_input_data += [
-                                        '$ITER_{1}_STAGE_3_TASK_{0}/traj.xtc > traj_{0}.xtc'.format(inst,i),
-                                        '$ITER_{1}_STAGE_3_TASK_{0}/traj.nopbc.xtc > traj_{0}.nopbc.xtc'.format(inst,i),
-                                        '$ITER_{1}_STAGE_3_TASK_{0}/topol.tpr > topol_{0}.tpr'.format(inst,i),
-                                        '$ITER_{1}_STAGE_3_TASK_{0}/file.lh5 > file_{0}.lh5'.format(inst,i),
-                                        '$ITER_{1}_STAGE_3_TASK_{0}/traj_info.txt > traj_info_{0}.txt'.format(inst,i)
+            inst = item['instance']
+            i = item['iter']
 
+            m1.link_input_data += [
+                                    '$ITER_{1}_STAGE_3_TASK_{0}/traj.xtc > traj_{0}.xtc'.format(inst,i),
+                                    '$ITER_{1}_STAGE_3_TASK_{0}/traj.nopbc.xtc > traj_{0}.nopbc.xtc'.format(inst,i),
+                                    '$ITER_{1}_STAGE_3_TASK_{0}/topol.tpr > topol_{0}.tpr'.format(inst,i),
+                                    '$ITER_{1}_STAGE_3_TASK_{0}/file.lh5 > file_{0}.lh5'.format(inst,i),
+                                    '$ITER_{1}_STAGE_3_TASK_{0}/traj_info.txt > traj_info_{0}.txt'.format(inst,i)
                                     ]
 
 
-            return m1
+        return m1
 
+    '''
     def branch_4(self, instance):
 
+
+        
         global TERMINATE
         global TOTAL_TRAJ
         global RECLUSTER
         global CLUSTER_GEN
         global RECLUSTER_NOW
         global ENSEMBLE_SIZE
+        global ANALYSIS_ITER
 
         if instance <= ENSEMBLE_SIZE:
 
@@ -190,7 +233,7 @@ class Test(EoP):
 
         else:
 
-            k = str(self.get_output(iter=ITER[instance-1],stage=4, instance=ENSEMBLE_SIZE+1))
+            k = str(self.get_output(stage=4, instance=ENSEMBLE_SIZE+1))
             ITER[instance-1]+=1
 
             try:
@@ -200,7 +243,7 @@ class Test(EoP):
                 print 'Traj: ',TOTAL_TRAJ, ' gen: ', CLUSTER_GEN
                 print 'Diff:', (TOTAL_TRAJ - RECLUSTER*CLUSTER_GEN)
                 if ((TOTAL_TRAJ - RECLUSTER*CLUSTER_GEN > RECLUSTER)or(RECLUSTER_NOW)):
-                    print 'Total so far: ',TOTAL_TRAJ
+                    print 'Total so far: ',TOTAL_TRAJ                    
 
                     # Lag time
                     #sleep()
@@ -211,6 +254,11 @@ class Test(EoP):
                     RECLUSTER_NOW=False
                     self._ensemble_size = 200+1
                     ENSEMBLE_SIZE=200
+
+                    ANALYSIS_ITER = ITER[instance-1]
+                    ANALYSIS_TASK = instance
+
+                    print 'iter: {0}, stage: 4, instance: {1}'.format(ANALYSIS_ITER, ANALYSIS_TASK)
                 else:
 
                     # Yaayyy !
@@ -221,6 +269,8 @@ class Test(EoP):
             except:
                 print 'Check-> Not enough simulations. Generate more !'
                 self.set_next_stage(stage=4)
+
+    '''
 
 
 
