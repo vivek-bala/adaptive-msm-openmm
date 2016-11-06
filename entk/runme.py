@@ -65,8 +65,11 @@ class Test(EoP):
 
             if self._name == 'init':
                 k1.link_input_data += ['$SHARED/equil{0}.gro > equil.gro'.format(instance-1)]
-            #else:
-                #k1.link_input_data += ['$PAT_init_ITER_{0}_STAGE_4_TASK_{1}/']
+            else:
+                k1.link_input_data += ['$PAT_init_ITER_{0}_STAGE_4_TASK_{1}/new_run_{2}.gro > equil.gro'.format(USABLE_ANA_DATA['iteration'],
+                                                                                                                USABLE_ANA_DATA['instance'],
+                                                                                                                instance-1
+                                                                                                                )]
             
             return k1
 
