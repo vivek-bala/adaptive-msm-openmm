@@ -36,6 +36,8 @@ MSM_DONE_FLAG=False
 
 ITER=[1 for x in range(1, ENSEMBLE_SIZE+2)]
 
+trial=2
+
 class Test(EoP):
 
     def __init__(self, ensemble_size, pipeline_size, name):
@@ -46,6 +48,7 @@ class Test(EoP):
         global ENSEMBLE_SIZE
         global ITER
         global USABLE_ANA_DATA
+        global trial
 
         if instance <= ENSEMBLE_SIZE:
 
@@ -63,12 +66,12 @@ class Test(EoP):
                                     '$SHARED/topol.top'
                                 ]
 
-            if self._name == 'init':
+            if self._name == '1':
                 k1.link_input_data += ['$SHARED/equil{0}.gro > equil.gro'.format(instance-1)]
             else:
-                k1.link_input_data += ['$PAT_init_ITER_{0}_STAGE_4_TASK_{1}/new_run_{2}.gro > equil.gro'.format(USABLE_ANA_DATA['iteration'],
+                k1.link_input_data += ['$PAT_{3}_ITER_{0}_STAGE_4_TASK_{1}/new_run_{2}.gro > equil.gro'.format(USABLE_ANA_DATA['iteration'],
                                                                                                                 USABLE_ANA_DATA['instance'],
-                                                                                                                instance-1
+                                                                                                                instance-1, trial-1
                                                                                                                 )]
             
             return k1
@@ -181,11 +184,14 @@ class Test(EoP):
                     # Note the required sims
                     USABLE_SIM_DATA = {'instance': instance, 'iter': ITER[instance-1]}
                     USABLE_SIM_LIST.append(USABLE_SIM_DATA)
-            except:
+
+                print 'Traj now: ',float(match.group(1))
+            except Exception, ex:
+                print 'Error here: ', ex
                 pass
 
             print 'Total traj: ', TOTAL_TRAJ
-            print 'Diff: ', (TOTAL_TRAJ - RECLUSTER*CLUSTER_GEN),', RECLUSTER: ', RECLUSTER
+            print 'Diff: ', (TOTAL_TRAJ - RECLUSTER*CLUSTER_GEN),', RECLUSTER: ', RECLUSTER, 'CLUSTER_GEN: ', CLUSTER_GEN
 
 
             #if ((TOTAL_TRAJ - RECLUSTER*CLUSTER_GEN > RECLUSTER)or(RECLUSTER_NOW)):
@@ -321,7 +327,7 @@ class Test(EoP):
 if __name__ == '__main__':
 
     # Create pattern object with desired ensemble size, pipeline size
-    pipe = Test(ensemble_size=ENSEMBLE_SIZE+1, pipeline_size=PIPELINE_SIZE+1, name='init')
+    pipe = Test(ensemble_size=ENSEMBLE_SIZE+1, pipeline_size=PIPELINE_SIZE+1, name='1')
 
     # Create an application manager
     app = AppManager(name='MSM')
@@ -363,8 +369,8 @@ if __name__ == '__main__':
                 username=res_dict[resource]['username'],
                 project = res_dict[resource]['project'],
                 queue= res_dict[resource]['queue'],
-                walltime=20,
-                database_url='mongodb://rp:rp@ds015335.mlab.com:15335/rp',
+                walltime=120,
+                database_url='mongodb://entk:entk@ds147267.mlab.com:47267/db_msm',
                 access_schema=res_dict[resource]['schema']
                 )
 
@@ -387,16 +393,35 @@ if __name__ == '__main__':
     # Submit request for resources + wait till job becomes Active
     res.allocate(wait=True)
 
-    # Run the first workload
-    res.run(app)
+    try:
 
+        # Run the first workload
+        res.run(app)
 
-    # Run the second workload
-    #pipe2 = Test(ensemble_size=200+1, pipeline_size=PIPELINE_SIZE+1, name='sec')
+        while(trial<=5):
 
-    #app.add_workload(pipe2)
+            # Run the second workload
+            pipe2 = Test(ensemble_size=20+1, pipeline_size=PIPELINE_SIZE+1, name='{0}'.format(trial))
 
-    #res.run(app)
+            app.add_workload(pipe2)
 
-    # Deallocate the resource
-    res.deallocate()
+            ENSEMBLE_SIZE=20
+            USABLE_SIM_DATA = dict()
+            USABLE_SIM_LIST = list()
+            USABLE_SIM_ITER = [1 for x in range(1, ENSEMBLE_SIZE+1)]
+            #USABLE_ANA_DATA = dict()
+            MSM_FLAG=False
+            MSM_DONE_FLAG=False
+
+            ITER=[1 for x in range(1, ENSEMBLE_SIZE+2)]    
+
+            res.run(app)
+            trial+=1
+
+    except Exception,ex:
+
+        print 'Failed with error: ',ex
+
+    finally:
+        # Deallocate the resource
+        res.deallocate()
