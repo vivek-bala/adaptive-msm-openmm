@@ -20,8 +20,7 @@ if __name__ == '__main__':
 
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('--interval')
-    parser.add_argument('--n_steps')
+    parser.add_argument('--ns')
 
     args = parser.parse_args()
 
@@ -46,7 +45,7 @@ if __name__ == '__main__':
     #initial_positions = simulation.context.getState(getPositions=True).getPositions()
     interval = int(1*unit.picosecond / (2*unit.femtosecond))
     #interval = int(args.interval)
-    n_steps = int(1*unit.nanosecond / (2*unit.femtosecond))
+    n_steps = int(int(args.ns)*unit.nanosecond / (2*unit.femtosecond))
     #n_steps = int(args.n_steps)
     print (interval, n_steps)
 

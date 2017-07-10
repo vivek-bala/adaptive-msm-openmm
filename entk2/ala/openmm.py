@@ -18,17 +18,11 @@ _KERNEL_INFO = {
             "name":         "openmm",
             "description":  "Execute openmm python scripte",
             "arguments":{
-                    "--interval=":
+                    "--ns=":
                         {
                             "mandatory": True,
-                            "description": "Interval between time steps (delta-t)"
+                            "description": "No. of nanoseconds to simulate"
                         },
-                    "--n_steps=":
-                        {
-                            "mandatory": True,
-                            "description": "Number of time steps"
-                        },
-
                     },
             "machine_configs": 
             {
@@ -76,10 +70,8 @@ class openmm_kernel(KernelBase):
         cfg = _KERNEL_INFO["machine_configs"][resource_key]
 
         executable = cfg['executable']
-        arguments  = [  'simulate.py', '--interval',
-                        self.get_arg('--interval='),
-                        '--n_steps',
-                        self.get_arg('--n_steps=') ]
+        arguments  = [  'simulate.py', '--ns',
+                        self.get_arg('--ns=')]
         self._executable  = executable
         self._arguments   = arguments
         self._environment = cfg["environment"]
