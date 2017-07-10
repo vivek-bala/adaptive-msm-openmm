@@ -15,14 +15,11 @@ import glob
 
 
 ## USER PARS
-ENSEMBLE_SIZE=3
+ENSEMBLE_SIZE=int(os.environ.get('ENSEMBLE_SIZE',None))
 PIPELINE_SIZE=2
-INTERVAL=200  ## Picoseconds
-N_STEPS=500000  
-TOTAL_DUR = N_STEPS* INTERVAL / 1000   ## Nanoseconds
+NS=int(os.environ.get('NS',None))
 ITER=1
-TOTAL_ITERS=2
-trial=2
+TOTAL_ITERS=int(os.environ.get('TOTAL_ITERS',None))
 
 class Test(PoE):
 
@@ -36,7 +33,7 @@ class Test(PoE):
         global N_STEPS, ITER
             
         k1 = Kernel(name='openmm')
-        k1.arguments = [ '--interval=%s'%INTERVAL, '--n_steps=%s'%N_STEPS]
+        k1.arguments = [ '--ns=%s'%NS]
         if ITER==1:
             k1.link_input_data = ['$SHARED/ala2.pdb','$SHARED/simulate.py']
         else:
@@ -46,7 +43,7 @@ class Test(PoE):
     def stage_2(self, instance):
 
 
-        global ITER
+        global ITER, NS, ENSEMBLE_SIZE, TOTAL_ITERS
         k1 = Kernel(name="msm")
         k1.arguments = ['--lag=2', 
                         '--stride=10',
@@ -62,26 +59,18 @@ class Test(PoE):
 
         k1.cores = 1
 
+        k1.download_output_data = ['microstate_info.txt > dur-%s-ensemble-%s-iters-%s/microstate_info-%s.txt'%(NS, ENSEMBLE_SIZE, TOTAL_ITERS, ITER),
+                                   'macrostate_info.txt > dur-%s-ensemble-%s-iters-%s/macrostate_info-%s.txt'%(NS, ENSEMBLE_SIZE, TOTAL_ITERS, ITER)]
+
         ITER+=1
 
         return k1
     
-    '''
-    def branch_2(self):
-
-        global ITER, TOTAL_ITER
-
-        if ITER<TOTAL_ITER:
-            self.set_next_stage(stage=1)
-            ITER+=1
-        else:
-            pass
-    '''
 
 if __name__ == '__main__':
 
     # Create pattern object with desired ensemble size, pipeline size
-    pipe = Test(ensemble_size=[ENSEMBLE_SIZE,1], pipeline_size=PIPELINE_SIZE, name='1', iterations=2)
+    pipe = Test(ensemble_size=[ENSEMBLE_SIZE,1], pipeline_size=PIPELINE_SIZE, name='1', iterations=TOTAL_ITERS)
 
     # Create an application manager
     app = AppManager(name='MSM')
@@ -106,8 +95,8 @@ if __name__ == '__main__':
 
     res_dict = {
 
-        'xsede.stampede': {'cores': '64', 'username': 'vivek91','project': 'TG-MCB090174', 'queue': 'development', 'schema': 'gsissh'},
-        'xsede.supermic': {'cores': '80', 'username': 'vivek91','project': 'TG-MCB090174', 'queue': 'workq', 'schema': 'gsissh'},
+        'xsede.stampede': {'cores': ENSEMBLE_SIZE, 'username': 'vivek91','project': 'TG-MCB090174', 'queue': 'development', 'schema': 'gsissh'},
+        'xsede.supermic': {'cores': ENSEMBLE_SIZE, 'username': 'vivek91','project': 'TG-MCB090174', 'queue': 'workq', 'schema': 'gsissh'},
     }
 
     path=os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
@@ -118,7 +107,7 @@ if __name__ == '__main__':
                 username=res_dict[resource]['username'],
                 project = res_dict[resource]['project'],
                 queue= res_dict[resource]['queue'],
-                walltime=30,
+                walltime=480,        # Roughly 1.2 mins/ns for this system
                 database_url='mongodb://rp:rp@ds137749.mlab.com:37749/db_msm3',
                 access_schema=res_dict[resource]['schema']
                 )
@@ -135,27 +124,7 @@ if __name__ == '__main__':
 
         # Run the first workload
         res.run(app)
-        '''
-        while(trial<=10):
-
-            # Run the second workload
-            ENSEMBLE_SIZE=100
-            pipe2 = Test(ensemble_size=ENSEMBLE_SIZE+1, pipeline_size=PIPELINE_SIZE+1, name='{0}'.format(trial))
-
-            app.add_workload(pipe2)
-
-            USABLE_SIM_DATA = dict()
-            USABLE_SIM_LIST = list()
-            USABLE_SIM_ITER = [1 for x in range(1, ENSEMBLE_SIZE+1)]
-            #USABLE_ANA_DATA = dict()
-            MSM_FLAG=False
-            MSM_DONE_FLAG=False
-
-            ITER=[1 for x in range(1, ENSEMBLE_SIZE+2)]    
-
-            res.run(app)
-            trial+=1
-        '''
+    
     except Exception,ex:
 
         print 'Failed with error: ',ex
