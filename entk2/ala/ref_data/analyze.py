@@ -163,6 +163,10 @@ if __name__ == '__main__':
     for val in msm.state_labels_:
         f.write(str(val) + '\n')
 
+    f.write('\nEigen uncertainty\n\n')
+    for val in msm.uncertainty_eigenvalues():
+        f.write(str(val) + '\n')
+
     f.close()
 
     xtcs = glob('*.xtc')
